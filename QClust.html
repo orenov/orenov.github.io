@@ -1,0 +1,232 @@
+<html>
+
+<head>
+<style type="text/css">
+.knitr.inline {
+  background-color: #f7f7f7;
+  border:solid 1px #B0B0B0;
+}
+.error {
+	font-weight: bold;
+	color: #FF0000;
+},
+.warning {
+	font-weight: bold;
+}
+.message {
+	font-style: italic;
+}
+.source, .output, .warning, .error, .message {
+	padding: 0em 1em;
+  border:solid 1px #F7F7F7;
+}
+.source {
+  background-color: #f5f5f5;
+}
+.rimage.left {
+  text-align: left;
+}
+.rimage.right {
+  text-align: right;
+}
+.rimage.center {
+  text-align: center;
+}
+.hl.num {
+  color: #AF0F91;
+}
+.hl.str {
+  color: #317ECC;
+}
+.hl.com {
+  color: #AD95AF;
+  font-style: italic;
+}
+.hl.opt {
+  color: #000000;
+}
+.hl.std {
+  color: #585858;
+}
+.hl.kwa {
+  color: #295F94;
+  font-weight: bold;
+}
+.hl.kwb {
+  color: #B05A65;
+}
+.hl.kwc {
+  color: #55aa55;
+}
+.hl.kwd {
+  color: #BC5A65;
+  font-weight: bold;
+}
+</style>
+<title>Sentence Clusterization</title>
+</head>
+<body>
+
+<p>Load data files</p>
+<p>Data is from https://archive.ics.uci.edu/ml/datasets.html?format=&task=&att=&area=&numAtt=&numIns=&type=text&sort=nameUp&view=table</p>
+<p>Opinion Reviews.</p>
+<div class="chunk" id="unnamed-chunk-1"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">data.battery</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.table</span><span class="hl std">(</span><span class="hl str">&quot;data/battery-life_amazon_kindle.txt.data&quot;</span><span class="hl std">,</span> <span class="hl kwc">sep</span> <span class="hl std">=</span> <span class="hl str">&quot;\n&quot;</span><span class="hl std">,</span> <span class="hl kwc">stringsAsFactors</span> <span class="hl std">=</span> <span class="hl num">FALSE</span><span class="hl std">,</span> <span class="hl kwc">strip.white</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">)</span>
+<span class="hl std">data.windows7</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.table</span><span class="hl std">(</span><span class="hl str">&quot;data/features_windows7.txt.data&quot;</span><span class="hl std">,</span> <span class="hl kwc">sep</span> <span class="hl std">=</span> <span class="hl str">&quot;\n&quot;</span><span class="hl std">,</span> <span class="hl kwc">stringsAsFactors</span> <span class="hl std">=</span> <span class="hl num">FALSE</span><span class="hl std">,</span> <span class="hl kwc">strip.white</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">)</span>
+</pre></div>
+<div class="warning"><pre class="knitr r">## Warning in scan(file, what, nmax, sep, dec, quote, skip, nlines,
+## na.strings, : EOF within quoted string
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">data.keyboard</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.table</span><span class="hl std">(</span><span class="hl str">&quot;data/keyboard_netbook_1005ha.txt.data&quot;</span><span class="hl std">,</span> <span class="hl kwc">sep</span><span class="hl std">=</span><span class="hl str">&quot;\n&quot;</span><span class="hl std">,</span> <span class="hl kwc">stringsAsFactors</span> <span class="hl std">=</span> <span class="hl num">FALSE</span><span class="hl std">,</span> <span class="hl kwc">strip.white</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">)</span>
+<span class="hl std">data.honda</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.table</span><span class="hl std">(</span><span class="hl str">&quot;data/performance_honda_accord_2008.txt.data&quot;</span><span class="hl std">,</span> <span class="hl kwc">sep</span> <span class="hl std">=</span> <span class="hl str">&quot;\n&quot;</span><span class="hl std">,</span> <span class="hl kwc">stringsAsFactors</span> <span class="hl std">=</span> <span class="hl num">FALSE</span><span class="hl std">,</span> <span class="hl kwc">strip.white</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">)</span>
+<span class="hl std">data.ipod</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">read.table</span><span class="hl std">(</span><span class="hl str">&quot;data/video_ipod_nano_8gb.txt.data&quot;</span><span class="hl std">,</span> <span class="hl kwc">sep</span> <span class="hl std">=</span> <span class="hl str">&quot;\n&quot;</span><span class="hl std">,</span> <span class="hl kwc">stringsAsFactors</span> <span class="hl std">=</span> <span class="hl num">FALSE</span><span class="hl std">,</span> <span class="hl kwc">strip.white</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">)</span>
+<span class="hl kwd">head</span><span class="hl std">(data.battery)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##                                                                                                                                                                                                                                                                                                           V1
+## 1                                                                                                                                                                                         After I plugged it in to my USB hub on my computer to charge the battery the charging cord design is very clever !
+## 2                                                                                                                  After you have paged tru a 500, page book one, page, at, a, time to get from Chapter 2 to Chapter 15, see how excited you are about a low battery and all the time it took to get there !
+## 3                                                                                                                                                                                                                              NO USER REPLACEABLE BATTERY, , Unless you buy the extended warranty for $65 .
+## 4                                                                                                                                                                          After 1 year you pay $80 plus shipping to send the device to Amazon and have the Kindle REPLACED, not the battery changed out   .
+## 5                                                                                                                                                                                        The fact that Kindle 2 has no SD card capability and the battery is not user, serviceable is not an issue with me .
+## 6 Things like the buttons that made it easy to accidentally turn pages  the separate cursor on the side that could only select lines and was sometimes hard to see  the occasionally awkward menus  the case which practically forced you to remove it to use it and sometimes pulled the battery door off .
+</pre></div>
+</div></div>
+I will try to do cluster analysis for these sentences without any knowledge of topics.
+As first step let's merge all this data sets and strip whitespaces.
+<div class="chunk" id="unnamed-chunk-2"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(gdata)</span>
+</pre></div>
+<div class="message"><pre class="knitr r">## gdata: read.xls support for 'XLS' (Excel 97-2004) files ENABLED.
+## 
+## gdata: read.xls support for 'XLSX' (Excel 2007+) files ENABLED.
+## 
+## Attaching package: 'gdata'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     nobs
+## 
+## The following object is masked from 'package:utils':
+## 
+##     object.size
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl std">sentences</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">c</span><span class="hl std">()</span>
+<span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">dim</span><span class="hl std">(data.battery)[</span><span class="hl num">1</span><span class="hl std">]) {sentences</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">c</span><span class="hl std">(sentences,</span> <span class="hl kwd">trim</span><span class="hl std">(data.battery[i,</span><span class="hl num">1</span><span class="hl std">]))}</span>
+<span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">dim</span><span class="hl std">(data.windows7)[</span><span class="hl num">1</span><span class="hl std">]){sentences</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">c</span><span class="hl std">(sentences,</span> <span class="hl kwd">trim</span><span class="hl std">(data.windows7[i,</span><span class="hl num">1</span><span class="hl std">]))}</span>
+<span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">dim</span><span class="hl std">(data.keyboard)[</span><span class="hl num">1</span><span class="hl std">]){sentences</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">c</span><span class="hl std">(sentences,</span> <span class="hl kwd">trim</span><span class="hl std">(data.keyboard[i,</span><span class="hl num">1</span><span class="hl std">]))}</span>
+<span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">dim</span><span class="hl std">(data.honda)[</span><span class="hl num">1</span><span class="hl std">]) {sentences</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">c</span><span class="hl std">(sentences,</span> <span class="hl kwd">trim</span><span class="hl std">(data.honda[i,</span><span class="hl num">1</span><span class="hl std">]))}</span>
+<span class="hl kwa">for</span> <span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">dim</span><span class="hl std">(data.ipod)[</span><span class="hl num">1</span><span class="hl std">]) {sentences</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">c</span><span class="hl std">(sentences,</span> <span class="hl kwd">trim</span><span class="hl std">(data.ipod[i,</span><span class="hl num">1</span><span class="hl std">]))}</span>
+<span class="hl std">sentences[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">10</span><span class="hl std">]</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##  [1] &quot;After I plugged it in to my USB hub on my computer to charge the battery the charging cord design is very clever !&quot;                                                                                                                                                                                                        
+##  [2] &quot;After you have paged tru a 500, page book one, page, at, a, time to get from Chapter 2 to Chapter 15, see how excited you are about a low battery and all the time it took to get there !&quot;                                                                                                                                 
+##  [3] &quot;NO USER REPLACEABLE BATTERY, , Unless you buy the extended warranty for $65 .&quot;                                                                                                                                                                                                                                             
+##  [4] &quot;After 1 year you pay $80 plus shipping to send the device to Amazon and have the Kindle REPLACED, not the battery changed out   .&quot;                                                                                                                                                                                         
+##  [5] &quot;The fact that Kindle 2 has no SD card capability and the battery is not user, serviceable is not an issue with me .&quot;                                                                                                                                                                                                       
+##  [6] &quot;Things like the buttons that made it easy to accidentally turn pages  the separate cursor on the side that could only select lines and was sometimes hard to see  the occasionally awkward menus  the case which practically forced you to remove it to use it and sometimes pulled the battery door off .&quot;                
+##  [7] &quot;The issue with the battery door opening is thus solved, but Amazon went further, eliminating the door altogether and wrapping the back with sleek stainless steel .&quot;                                                                                                                                                       
+##  [8] &quot;Frankly, I never used either the card slot or changed the battery on my Kindle 1 but I liked that they were there and I miss them on the Kindle 2, even though, I have to admit, I dont actually need them .\n Its also easy to charge the Kindle in the car if you have a battery charger with a USB port   .&quot;            
+##  [9] &quot;You cant carry an extra battery ,  though with the extended battery life and extra charging options its almost a non, issue ,  and you cant replace the battery because of the iPod, like fixed backing .\n For one thing, theres no charge except battery power no pun intended !&quot;                                        
+## [10] &quot;Before purchasing, I was obsessed with the reviews and predictions I found online and reading about some of the critiques such as the thick border, the lack of touchscreen, lack of battery SD slot, lack of a back light, awkward difficult keyboard layout, minimally faster page flipping, and the super, high price .&quot;
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">str</span><span class="hl std">(sentences)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##  chr [1:245] &quot;After I plugged it in to my USB hub on my computer to charge the battery the charging cord design is very clever !&quot; ...
+</pre></div>
+</div></div>
+
+Now we have our data. Let's use simple tf-idf approach at first.
+<div class="chunk" id="unnamed-chunk-3"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">library</span><span class="hl std">(Matrix)</span>
+<span class="hl kwd">library</span><span class="hl std">(gamlr)</span>
+<span class="hl kwd">library</span><span class="hl std">(parallel)</span>
+<span class="hl kwd">library</span><span class="hl std">(distrom)</span>
+<span class="hl kwd">library</span><span class="hl std">(textir)</span>
+<span class="hl kwd">library</span><span class="hl std">(NLP)</span>
+<span class="hl kwd">library</span><span class="hl std">(tm)</span>
+<span class="hl kwd">library</span><span class="hl std">(SnowballC)</span>
+</pre></div>
+</div></div>
+
+<div class="chunk" id="unnamed-chunk-4"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">corpus</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">VCorpus</span><span class="hl std">(</span><span class="hl kwd">VectorSource</span><span class="hl std">(sentences))</span>
+<span class="hl std">corpus</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">tm_map</span><span class="hl std">(corpus,</span>
+                     <span class="hl kwd">content_transformer</span><span class="hl std">(</span><span class="hl kwa">function</span><span class="hl std">(</span><span class="hl kwc">x</span><span class="hl std">)</span> <span class="hl kwd">iconv</span><span class="hl std">(x,</span> <span class="hl kwc">to</span><span class="hl std">=</span><span class="hl str">'UTF-8-MAC'</span><span class="hl std">,</span> <span class="hl kwc">sub</span><span class="hl std">=</span><span class="hl str">'byte'</span><span class="hl std">)),</span>
+                     <span class="hl kwc">mc.cores</span><span class="hl std">=</span><span class="hl num">1</span><span class="hl std">)</span>
+<span class="hl std">corpus</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">tm_map</span><span class="hl std">(corpus,</span> <span class="hl kwd">content_transformer</span><span class="hl std">(removePunctuation),</span> <span class="hl kwc">lazy</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">)</span>
+<span class="hl std">my.stopwords</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl kwd">stopwords</span><span class="hl std">(</span><span class="hl str">'english'</span><span class="hl std">),</span> <span class="hl str">&quot;the&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;great&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;use&quot;</span><span class="hl std">)</span>
+<span class="hl std">corpus</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">tm_map</span><span class="hl std">(corpus, removeWords,</span> <span class="hl kwd">c</span><span class="hl std">(</span><span class="hl kwd">stopwords</span><span class="hl std">(</span><span class="hl str">'english'</span><span class="hl std">),</span> <span class="hl str">&quot;the&quot;</span><span class="hl std">,</span> <span class="hl str">&quot;great&quot;</span><span class="hl std">))</span>
+<span class="hl std">corpus</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">tm_map</span><span class="hl std">(corpus, removeNumbers)</span>
+<span class="hl std">corpus</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">Corpus</span><span class="hl std">(</span><span class="hl kwd">VectorSource</span><span class="hl std">(corpus))</span>
+
+<span class="hl std">dtm</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">DocumentTermMatrix</span><span class="hl std">(corpus,</span> <span class="hl kwc">control</span><span class="hl std">=</span><span class="hl kwd">list</span><span class="hl std">(</span><span class="hl kwc">minWordLength</span><span class="hl std">=</span><span class="hl num">4</span><span class="hl std">,</span> <span class="hl kwc">minDocFreq</span><span class="hl std">=</span><span class="hl num">4</span><span class="hl std">))</span>
+<span class="hl std">dtm</span>
+</pre></div>
+<div class="output"><pre class="knitr r">## &lt;&lt;DocumentTermMatrix (documents: 245, terms: 1492)&gt;&gt;
+## Non-/sparse entries: 4171/361369
+## Sparsity           : 99%
+## Maximal term length: 14
+## Weighting          : term frequency (tf)
+</pre></div>
+</div></div>
+Export to df and inverse matrix.
+<div class="chunk" id="unnamed-chunk-5"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">df</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">as.data.frame</span><span class="hl std">(</span><span class="hl kwd">inspect</span><span class="hl std">(dtm))</span>
+<span class="hl std">m</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">t</span><span class="hl std">(</span><span class="hl kwd">as.matrix</span><span class="hl std">(df))</span>
+<span class="hl std">d</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">dist</span><span class="hl std">(m)</span>
+</pre></div>
+</div></div>
+Initial clustering.
+
+<div class="chunk" id="unnamed-chunk-6"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl std">hr</span> <span class="hl kwb">&lt;-</span> <span class="hl kwd">hclust</span><span class="hl std">(d,</span> <span class="hl kwc">method</span> <span class="hl std">=</span> <span class="hl str">&quot;complete&quot;</span><span class="hl std">,</span> <span class="hl kwc">members</span><span class="hl std">=</span><span class="hl kwa">NULL</span><span class="hl std">)</span>
+<span class="hl kwd">plot</span><span class="hl std">(hr)</span>
+</pre></div>
+</div><div class="rimage default"><img src="figure/unnamed-chunk-6-1.png" title="plot of chunk unnamed-chunk-6" alt="plot of chunk unnamed-chunk-6" class="plot" /></div></div>
+Yeah. Unimpossible for understanding. Let's work on this problem.
+<div class="chunk" id="unnamed-chunk-7"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">plot</span><span class="hl std">(hr,</span> <span class="hl kwc">hang</span> <span class="hl std">=</span> <span class="hl opt">-</span><span class="hl num">1</span><span class="hl std">)</span>
+<span class="hl kwd">rect.hclust</span><span class="hl std">(hr,</span> <span class="hl num">10</span><span class="hl std">)</span>
+</pre></div>
+</div><div class="rimage center"><img src="figure/unnamed-chunk-7-1.png" title="plot of chunk unnamed-chunk-7" alt="plot of chunk unnamed-chunk-7" class="plot" /></div></div>
+I don't want to think why is this and pick number of cluster as random.
+<div class="chunk" id="unnamed-chunk-8"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwd">set.seed</span><span class="hl std">(</span><span class="hl num">1235</span><span class="hl std">)</span>
+<span class="hl std">df</span> <span class="hl kwb">&lt;-</span> <span class="hl std">df[,</span><span class="hl opt">!</span><span class="hl kwd">colnames</span><span class="hl std">(df)</span><span class="hl opt">%in%</span><span class="hl std">my.stopwords]</span>
+<span class="hl std">cl</span> <span class="hl kwb">=</span> <span class="hl kwd">kmeans</span><span class="hl std">(df,</span> <span class="hl kwc">centers</span> <span class="hl std">=</span> <span class="hl num">10</span><span class="hl std">,</span> <span class="hl kwc">nstart</span> <span class="hl std">=</span> <span class="hl num">50</span><span class="hl std">,</span> <span class="hl kwc">iter.max</span> <span class="hl std">=</span> <span class="hl num">100</span><span class="hl std">)</span>
+<span class="hl std">res</span> <span class="hl kwb">=</span> <span class="hl std">cl</span><span class="hl opt">$</span><span class="hl std">centers</span>
+<span class="hl std">discr</span> <span class="hl kwb">=</span> <span class="hl kwd">apply</span><span class="hl std">(cl</span><span class="hl opt">$</span><span class="hl std">centers,</span> <span class="hl num">2</span><span class="hl std">, sd)</span>
+<span class="hl std">r</span> <span class="hl kwb">=</span> <span class="hl kwd">sort</span><span class="hl std">(discr,</span> <span class="hl kwc">decreasing</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">,</span> <span class="hl kwc">index</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">)</span><span class="hl opt">$</span><span class="hl std">ix[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">10</span><span class="hl std">]</span>
+<span class="hl kwd">print</span><span class="hl std">(r)</span>
+</pre></div>
+<div class="output"><pre class="knitr r">##  [1]  902  439 1372  643  105  169  180 1418  681  990
+</pre></div>
+<div class="source"><pre class="knitr r"><span class="hl kwd">barplot</span><span class="hl std">(cl</span><span class="hl opt">$</span><span class="hl std">centers[,r],</span><span class="hl kwc">beside</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span> <span class="hl kwc">col</span><span class="hl std">=</span><span class="hl kwd">rainbow</span><span class="hl std">(</span><span class="hl num">10</span><span class="hl std">))</span>
+</pre></div>
+</div><div class="rimage center"><img src="figure/unnamed-chunk-8-1.png" title="plot of chunk unnamed-chunk-8" alt="plot of chunk unnamed-chunk-8" class="plot" /></div></div>
+Problems:
+Actually we've started kmeans algorithm only ones, it's very unstable in sparse data. So the very right way is to run it multiple times and then get clusters. Also i should notice that kmeans thinks that our clusters are spheres. If from domain we know that it isn't that, so we need to choose another algorithm.
+
+<p>Let's fix this problem </p>
+
+<div class="chunk" id="unnamed-chunk-9"><div class="rcode"><div class="source"><pre class="knitr r"><span class="hl kwa">for</span><span class="hl std">(i</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">50</span><span class="hl std">){</span>
+  <span class="hl std">cl</span> <span class="hl kwb">=</span> <span class="hl kwd">kmeans</span><span class="hl std">(df,</span> <span class="hl kwc">centers</span> <span class="hl std">=</span> <span class="hl num">10</span><span class="hl std">,</span> <span class="hl kwc">nstart</span> <span class="hl std">=</span> <span class="hl num">50</span><span class="hl std">,</span> <span class="hl kwc">iter.max</span> <span class="hl std">=</span> <span class="hl num">100</span><span class="hl std">)</span>
+  <span class="hl std">tt</span> <span class="hl kwb">=</span> <span class="hl std">cl</span><span class="hl opt">$</span><span class="hl std">centers</span>
+  <span class="hl kwa">for</span><span class="hl std">(j</span> <span class="hl kwa">in</span> <span class="hl num">1</span><span class="hl opt">:</span><span class="hl kwd">length</span><span class="hl std">(tt)) {</span>
+    <span class="hl std">tt[i]</span> <span class="hl kwb">=</span> <span class="hl std">tt[i]</span> <span class="hl opt">+</span> <span class="hl std">cl</span><span class="hl opt">$</span><span class="hl std">centers[</span><span class="hl kwd">sort</span><span class="hl std">(</span><span class="hl kwd">abs</span><span class="hl std">(tt</span> <span class="hl opt">-</span> <span class="hl std">cl</span><span class="hl opt">$</span><span class="hl std">centers),</span> <span class="hl kwc">i</span><span class="hl std">=T)</span><span class="hl opt">$</span><span class="hl std">ix[</span><span class="hl num">1</span><span class="hl std">]]</span>
+    <span class="hl std">tt</span> <span class="hl kwb">=</span> <span class="hl std">tt</span><span class="hl opt">/</span><span class="hl num">2</span>
+  <span class="hl std">}</span>
+<span class="hl std">}</span>
+<span class="hl std">discr</span> <span class="hl kwb">=</span> <span class="hl kwd">apply</span><span class="hl std">(cl</span><span class="hl opt">$</span><span class="hl std">centers,</span> <span class="hl num">2</span><span class="hl std">, sd)</span>
+<span class="hl std">r</span> <span class="hl kwb">=</span> <span class="hl kwd">sort</span><span class="hl std">(discr,</span> <span class="hl kwc">decreasing</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">,</span> <span class="hl kwc">index</span> <span class="hl std">=</span> <span class="hl num">TRUE</span><span class="hl std">)</span><span class="hl opt">$</span><span class="hl std">ix[</span><span class="hl num">1</span><span class="hl opt">:</span><span class="hl num">10</span><span class="hl std">]</span>
+<span class="hl kwd">barplot</span><span class="hl std">(cl</span><span class="hl opt">$</span><span class="hl std">centers[,r],</span><span class="hl kwc">beside</span><span class="hl std">=</span><span class="hl num">TRUE</span><span class="hl std">,</span> <span class="hl kwc">col</span><span class="hl std">=</span><span class="hl kwd">rainbow</span><span class="hl std">(</span><span class="hl num">10</span><span class="hl std">))</span>
+</pre></div>
+</div><div class="rimage center"><img src="figure/unnamed-chunk-9-1.png" title="plot of chunk unnamed-chunk-9" alt="plot of chunk unnamed-chunk-9" class="plot" /></div></div>
+We see results, ipod is added. This improve our results a lot.
+
+
+Conclusions:
+<p>Orange cluster interested in ['camera', 'video', 'ipod']</p>
+<p>Cyan cluster interested in ['performance', 'car']</p>
+<p>Light green cluster interested in ['camera', 'video'], but less than orange cluster</p>
+<p>Dark Blue cluster interested in ['features', 'windows']</p>
+<p>Blue cluster intereted in ['battery', 'keyboard', 'life']</p>
+<p>Purple cluster interested in ['battery', 'life']</p>
+<p>Yellow cluster interestedn in ['keyboard']</p>
+
+This 100% unsupervised approach to cluster this type of data. And we obtain good segmentation of our sentences into topics.
+
+</body>
+</html>
