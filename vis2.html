@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+    <title>Hospital Data Visualization</title>
+    <style type="text/css">
+
+body {
+  width: 1200px;
+  margin: 50px auto;
+  font: 11px sans-serif;
+}
+
+label {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+
+.bar rect {
+  fill: steelblue;
+  fill-opacity: .9;
+
+}
+
+.bar rect:hover {
+  fill: brown;
+}
+
+
+.bar text.value {
+  fill: white;
+}
+
+.axis {
+  shape-rendering: crispEdges;
+}
+
+.axis path {
+  fill: none;
+}
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis line {
+  stroke: #fff;
+  stroke-opacity: .8;
+}
+
+.y.axis path {
+  stroke: black;
+  stroke-opacity:.8;
+}
+
+div.tooltip {   
+  position: absolute;           
+  text-align: center;           
+  width: 180px;                  
+  height: 65px;                 
+  padding: 5px;             
+  font: 12px sans-serif;        
+  background: lightsteelblue;   
+  border: 0px;      
+  border-radius: 8px;           
+  pointer-events: none;         
+}
+
+</style>
+  <label><input type="checkbox"> Sort values</label>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script src="http://dimplejs.org/dist/dimple.v2.0.0.min.js"></script>  
+  <script type="text/javascript">
+    function summarizeOneColumn(data) {
+        var newData = d3.nest()
+            .key(function(d) { return d.Diagnosis;})
+            .key(function(d) { return d.DiagnosisCUI})
+            .rollup(function(d) { 
+                return d3.sum(d, function(g) {return 1});
+            }).entries(data);
+        return newData;
+    };
+
+var m = [30, 10, 10, 100],
+    w = 960 - m[1] - m[3],
+    h = 1200 - m[0] - m[2];
+
+var format = d3.format(",.0f");
+
+var x = d3.scale.linear().range([0, w]),
+    y = d3.scale.ordinal().rangeRoundBands([0, h/2], .1);
+
+var xAxis = d3.svg.axis().scale(x).orient("top"),
+    yAxis = d3.svg.axis().scale(y).orient("left").tickSize(0);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", w + m[1] + m[3])
+    .attr("height", h + m[0] + m[2])
+  .append("g")
+    .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+
+
+d3.csv("hospitalcsv.csv", function(diag) {
+  var dimension = diag.length;
+  var diagnosisSum = summarizeOneColumn(diag);
+  
+  diagnosisSum.forEach(function(d) {
+    d.key = d.key;
+    d.visualKey = d.key.substring(0,17);
+    d.value = d3.sum(d.values.map(function(d1) {
+      return d1.values;}));
+    d.codes = d.values.map(function(d1) { return d1.key; });
+  });
+
+  var data = diagnosisSum.filter(function(elem) {return elem.key}).sort(function(a, b){return b.value-a.value}).slice(1,30);
+  // Parse numbers, and sort by value.
+
+  // Set the scale domain.
+  x.domain([0, d3.max(data, function(d) { return d.value; })]);
+  y.domain(data.map(function(d) { return d.key; }));
+
+  var div = d3.select("body").append("div")   
+    .attr("class", "tooltip")               
+    .style("opacity", 0);
+
+  var bar = svg.selectAll("g.bar")
+      .data(data)
+    .enter().append("g")
+      .attr("class", "bar")
+      .attr("transform", function(d) { return "translate(0," + y(d.key) + ")"; });
+
+  bar.append("rect")
+      .attr("width", function(d) { return x(d.value); })
+      .attr("height", y.rangeBand())
+      .on("mouseover", function(d) {      
+            div.transition()        
+                .duration(200)      
+                .style("opacity", .9);      
+            div .html("<b>Diagnosis:</b> " + d.key + "<br/>"  +  "<b>Number of occurence: </b>" + d.value + "<br/>" +
+              "<b>Persentage: </b>" + (100*d.value/dimension).toFixed(2) + "%<br/>" +  
+              "<b>Codes: </b>" + d.codes.toString() )  
+                .style("left", (d3.event.pageX) + "px")     
+                .style("top", (d3.event.pageY - 28) + "px");    
+            })                  
+      .on("mouseout", function(d) {       
+            div.transition()        
+                .duration(500)      
+                .style("opacity", 0);   
+        });
+
+  bar.append("text")
+      .attr("class", "value")
+      .attr("x", function(d) { return x(d.value); })
+      .attr("y", y.rangeBand() / 2)
+      .attr("dx", -3)
+      .attr("dy", ".35em")
+      .attr("text-anchor", "end")
+      .text(function(d) { return format(d.value); });
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .call(xAxis);
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis);
+  
+  d3.select("input").on("change", change);
+
+  
+  function change() {
+  
+    var y0 = y.domain(data.sort(this.checked
+        ? function(a, b) { return b.value - a.value; }
+        : function(a, b) { return d3.ascending(a.key, b.key); })
+        .map(function(d) { return d.key; }))
+        .copy();
+
+    var transition = svg.transition().duration(600),
+        delay = function(d, i) { return i * 50; };
+
+    transition.selectAll(".bar")
+        .delay(delay)
+        .attr("y", function(d) { return y0(d.key); })
+        .attr("transform", function(d) {return "translate(0," + y0(d.key) + ")";});
+
+    transition.select(".y.axis")
+        .call(yAxis)
+      .selectAll("g")
+        .delay(delay);
+  }
+});
+
+    </script>
