@@ -60,7 +60,6 @@
                 var scaleLink = d3.scale.linear()
                         .domain([minLinkFreq, maxLinkFreq])
                         .range([1, 14]);
-                console.log(links);
                 var link = svg.selectAll(".link")
                     .data(links)
                     .enter().append("g")
@@ -90,8 +89,6 @@
                       })
                     .style("stroke", "grey")
                     .style("stroke-width", function(d) { 
-                        console.log(d.freq);
-                        console.log(scaleLink(d.freq));
                         return scaleLink(d.freq); 
                     });
 
@@ -124,7 +121,7 @@
                             .style("left", (d3.event.pageX) + "px")     
                             .style("top", (d3.event.pageY - 28) + "px");    
 
-                        d3.selectAll(".from" + d.Var1 + ":not(.pathlabel")
+                        d3.selectAll(".from" + d.Var1 + ":not(.pathlabel)")
                             .transition()
                             .duration(500)
                             .style("stroke", "green")
