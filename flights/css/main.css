@@ -1,0 +1,32 @@
+body {
+    height: 100%;
+    width: 100%;
+    text-align: center;
+        background-image: url("../images/background.png");
+    overflow: hidden;
+    margin: 0;
+}
+
+path { 
+    fill: #aaa; 
+    opacity: 0.8;
+}
+
+div.tooltip {   
+  position: absolute;           
+  text-align: center;           
+  width: 180px;                  
+  height: 65px;                 
+  padding: 5px;             
+  font: 12px sans-serif;        
+  background: lightsteelblue;   
+  border: 1px;      
+  border-radius: 8px;           
+  pointer-events: none;         
+}
+
+.link {
+  fill: none;
+  stroke: #000;
+  stroke-opacity: .1;
+}
