@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+
+</style>
+<body>
+<h1 style="text-align: center; font-family: 'Shadows Into Light', cursive; color: black">USA Flights 2008 Visualization made by Oleksii Renov</h1>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<link rel="stylesheet" type="text/css" href="css/main.css">
+<link href='http://fonts.googleapis.com/css?family=Shadows+Into+Light' rel='stylesheet' type='text/css'>
+<script type="text/javascript">
+
+    var div = d3.select("body").append("div")   
+        .attr("class", "tooltip")               
+        .style("opacity", 0);
+    var w = 1200;
+    var h = 600;
+    var projection = d3.geo.albersUsa()
+            .translate([w/2, h/2])
+            .scale([1300]);
+    var path = d3.geo.path()
+            .projection(projection);
+    var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("align", "center")
+            .attr("height", h);
+    d3.json("data/us-states.json", function(json) {  
+        d3.csv("data/links.csv", function(links){  
+            d3.csv("data/city.csv", function(data) {
+                svg.selectAll("path")
+                    .data(json.features)
+                    .enter()
+                    .append("path")
+                    .attr("d", path)
+                    .attr("style", function(d){
+                        return d.properties.name;
+                    });
+                data.forEach(function(d) { d.outboundFreq = +d.outboundFreq; });
+                var maxFreq = d3.max(data, function(d) { 
+                    return d.outboundFreq; 
+                });
+                var minFreq = d3.min(data, function(d) { 
+                    return d.outboundFreq; 
+                });
+                var scaleRadius = d3.scale.log()
+                        .domain([minFreq, maxFreq])
+                        .range([0.1, 7]);
+                links.forEach(function(d) {links.freq = + links.freq});
+                var maxLinkFreq = d3.max(links, function(d) {
+                    return d.freq;
+                });
+                var minLinkFreq = d3.min(links, function(d) {
+                    return d.freq;
+                });
+
+                var scaleLink = d3.scale.linear()
+                        .domain([minLinkFreq, maxLinkFreq])
+                        .range([1, 14]);
+                var link = svg.selectAll(".link")
+                    .data(links)
+                    .enter().append("g")
+                    .attr("class", "linkg");
+                svg.selectAll(".linkg")
+                    .data(links)
+                    .append("path")
+                    .attr("class", function(d) {
+                        return "link " + "from" + d.from + " to" + d.to;
+                      })
+                    .attr("id" ,function(d) {
+                        return "link" + "to" + d.to; 
+                      })      
+                    .attr("d", function(d) {
+                        try {
+                                var s = projection([d.fromlong, d.fromlat]);
+                                var t = projection([d.tolong, d.tolat]);
+                                var sx = s[0], sy = s[1], tx = t[0], ty = t[1];
+                                dx = tx - sx, dy = ty - sy,
+                                dr = 2 * Math.sqrt(dx * dx + dy * dy);
+                                return "M" + sx + "," + sy + "A" + dr + "," + dr + " 0 0,1 " + tx + "," + ty;
+                        }
+                        catch(err)
+                        {
+                            return;
+                        }
+                      })
+                    .style("stroke", "grey")
+                    .style("stroke-width", function(d) { 
+                        return scaleLink(d.freq); 
+                    });
+
+                svg.selectAll("circle")
+                   .data(data)
+                   .enter()
+                   .append("circle")
+                   .attr("cx", function(d) {
+                           return projection([d.long, d.lat])[0];
+                   })
+                   .attr("cy", function(d) {
+                           return projection([d.long, d.lat])[1];
+                   })
+                   .attr("r", function(d){
+                        return scaleRadius(d.outboundFreq);
+                   })
+                   .attr("city", function(d){return d.city;})
+                   .attr("airport", function(d){return d.airport;})
+                   .attr("freq", function(d){return d.outboundFreq;})
+                   .attr("stateabbrv", function(d){return d.state;})
+                   .attr("id", function(d) {return d.Var1;})
+                   .style("fill", "steelblue")
+                   .style("opacity", 0.75)
+                   
+                    
+                svg.selectAll("circle")
+                    .on("mouseover", function(d) {
+                        div.transition()        
+                            .duration(200)      
+                            .style("opacity", .9);      
+                        div.html("<b>City: </b>" + d.city + ", " +  d.state + "<br/>" +  "<b>Origin flights: </b>" + d.inboundFreq + "<br/>" +  "<b>Destination flights: </b>" + d.outboundFreq + "<br/>" + "<b>Airport: </b>" + d.airport)  
+                            .style("left", (d3.event.pageX) + "px")     
+                            .style("top", (d3.event.pageY - 28) + "px");    
+
+                        d3.selectAll(".from" + d.Var1 + ":not(.pathlabel)")
+                            .transition()
+                            .duration(500)
+                            .style("stroke", "green")
+                            .style("stroke-opacity", "1");
+                        
+                        d3.selectAll(".to" + d.Var1 + ":not(.pathlabel)")
+                            .transition()
+                            .duration(500)
+                            .style("stroke", "orange")
+                            .style("stroke-opacity", "1");
+
+                        d3.select(this).style("fill", "black");
+                    })
+                    .on("mouseout", function(d) {       
+                        div.transition()        
+                            .duration(500)      
+                            .style("opacity", 0); 
+                        
+                        d3.selectAll(".from" + d.Var1 + ":not(.pathlabel)")
+                            .transition()
+                            .duration(500)
+                            .style("stroke", "grey")
+                            .style("stroke-opacity", ".1");
+                        
+
+                        d3.selectAll(".to" + d.Var1 + ":not(.pathlabel)")
+                            .transition()
+                            .duration(500)
+                            .style("stroke", "grey")
+                            .style("stroke-opacity", ".1");
+
+                        d3.select(this).style("fill", "steelblue");
+
+                    });
+
+                    
+                    
+                    var legend = svg.selectAll(".legend")
+                        .data(keys.slice().reverse())
+                        .enter().append("g")
+                        .attr("class", "legend")
+                        .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+                    legend.append("rect")
+                        .attr("x", width - 18)
+                        .attr("width", 18)
+                        .attr("height", 18)
+                        .style("fill", color)
+                        .style("stroke", "black")
+                        .style("stroke-width", 1);
+
+                    legend.append("text")
+                        .attr("x", width - 24)
+                        .attr("y", 9)
+                        .attr("dy", ".35em")
+                        .style("text-anchor", "end")
+                        .text(function(d) { return d; });
+                });
+
+        });
+    });
+            
+</script>
