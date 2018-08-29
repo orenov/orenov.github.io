@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+text{
+    font-size:12px;
+}
+.mainBars rect{
+  shape-rendering: auto;
+  fill-opacity: 0;
+  stroke-width: 0.5px;
+  stroke: rgb(0, 0, 0);
+  stroke-opacity: 0;
+}
+.subBars{
+    shape-rendering:crispEdges;
+}
+.edges{
+    stroke:none;
+    fill-opacity:0.5;
+}
+.header{
+    text-anchor:middle;
+    font-size:16px;
+}
+line{
+    stroke:grey;
+}
+</style>
+<body>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="http://vizjs.org/viz.v1.1.0.min.js"></script>
+<script>
+
+var data=[
+['Strategy_Gamers','Virginia',0.508574888110161,0],
+['Adults','Georgia',0,0],
+['Adults','Michigan',0,0],
+['Parents','Virginia',0.94746983749792,0],
+['Parents','Michigan',0.985914081335068,0],
+['Audience_Male','Georgia',0.406296287663281,0.0308439964428544],
+['Audience_Female','Texas',0.754528595367447,0.743558093206957],
+['Audience_Female','Virginia',0.199262094451115,0.146690611029044],
+['Audience_Male','Ohio',0,0.597238682443276],
+['Audience_Female','Illinois',0.583390547661111,0.388507757103071],
+['Parents','Florida',0.265718124806881,0.668685935437679],
+['Parents','Michigan',0.836507187923416,0.974486117251217],
+['Strategy_Gamers','Virginia',0.245658903149888,0],
+['Strategy_Gamers','Kentucky',0.388349946588278,0.880078342044726],
+['Adults','Michigan',0,0.526736121159047],
+['Audience_Female','Ohio',0,0.231870334828272],
+['Parents','Virginia',0.650135232368484,0.702681313734502],
+['Strategy_Gamers','Florida',0.907881108345464,0],
+['Audience_Male','Kentucky',0,0],
+['Audience_Female','Illinois',0,0.346194100100547],
+['Audience_Female','Illinois',0,0.546108611626551],
+['Strategy_Gamers','New York',0.0158678758889437,0.801878520753235],
+['Audience_Male','Illinois',0,0.694469991372898],
+['Traveller','Florida',0,0.111833511386067],
+['Parents','New York',0,0],
+['Traveller','Wisconsin',0.0705388917122036,0],
+['Teenagers','Michigan',0.92082536034286,0.716568602947518],
+['Strategy_Gamers','Wisconsin',0,0.904586709104478],
+['Audience_Female','New York',0,0.294939330080524],
+['Parents','Virginia',0.106846960028633,0.965689721982926],
+['Traveller','Michigan',0,0.0608269423246384],
+['Audience_Male','Wisconsin',0.159847274422646,0.156831485917792],
+['Teenagers','Alabama',0.74033772549592,0],
+['Audience_Female','Michigan',0.0927223633043468,0.737538658780977],
+['Traveller','Alabama',0,0.419248678255826],
+['Strategy_Gamers','New Jersey',0.814393315697089,0],
+['Traveller','New Jersey',0.63355923932977,0.940206164726987],
+['Parents','Alabama',0,0],
+['Traveller','Kentucky',0.817122778622434,0.788922716630623],
+['Strategy_Gamers','Alabama',0.703815882327035,0.228846261743456],
+['Audience_Male','New Jersey',0,0],
+['Traveller','Virginia',0.413023432251066,0],
+['Parents','New Jersey',0,0.561447056243196],
+['Teenagers','Texas',0,0],
+['Adults','New Jersey',0.047976219560951,0.467008226783946],
+['Audience_Male','Ohio',0.124947794247419,0],
+['Audience_Female','Virginia',0.562753116711974,0.351490156026557],
+['Audience_Female','Georgia',0,0],
+['Audience_Male','Georgia',0.607675337232649,0],
+['Adults','Alabama',0.517190002603456,0.774171562166885],
+['Audience_Male','Georgia',0,0.714614914497361],
+['Adults','Florida',0.700762771302834,0],
+['Strategy_Gamers','Illinois',0.489589603152126,0.289694215171039],
+['Traveller','Michigan',0,0.911034250631928],
+['Adults','Virginia',0,0.597642731387168],
+['Traveller','Texas',0,0.598986949305981],
+['Teenagers','Illinois',0,0.442773157265037],
+['Audience_Female','Illinois',0,0],
+['Audience_Female','Kentucky',0.460417613852769,0.20523305865936],
+['Traveller','Ohio',0,0.418567155487835],
+['Traveller','Kentucky',0.958137388341129,0.100197956198826],
+['Adults','Michigan',0,0.677275158232078],
+['Adults','Alabama',0,0],
+['Parents','New York',0.399978519184515,0.567182712024078],
+['Traveller','Alabama',0,0],
+['Strategy_Gamers','Alabama',0.837333920877427,0.752944574924186],
+['Audience_Male','Kentucky',0.822760879760608,0],
+['Traveller','Illinois',0,0.547104601981118],
+['Traveller','Illinois',0,0.603368711657822],
+['Traveller','New York',0.900281405542046,0.11279012192972],
+['Audience_Female','Ohio',0,0.55363821121864],
+['Teenagers','Florida',0,0.0353852417320013],
+['Adults','Wisconsin',0,0.792924842564389],
+['Audience_Male','New York',0.328524482203647,0.224582188529894],
+['Audience_Female','Virginia',0,0.913107102038339],
+['Strategy_Gamers','New York',0,0],
+['Traveller','Florida',0,0.271534416824579],
+['Audience_Male','Ohio',0,0.971781147411093],
+['Parents','Texas',0,0.0337182614021003],
+['Strategy_Gamers','Wisconsin',0.921588503522798,0],
+['Adults','New Jersey',0.196393045829609,0.346697228960693],
+['Audience_Male','Virginia',0.927088218042627,0],
+['Audience_Female','New Jersey',0.743077383609489,0],
+['Teenagers','Michigan',0.954451610334218,0.315779475960881],
+['Strategy_Gamers','Michigan',0.840181168867275,0],
+['Audience_Male','Illinois',0.79957392020151,0.883822160540149],
+['Audience_Male','New Jersey',0.266020616982132,0.223469635937363],
+['Parents','Texas',0,0],
+['Teenagers','Texas',0,0.447966382373124],
+['Teenagers','Illinois',0.307475451845676,0],
+['Parents','Texas',0,0.311361996456981],
+['Traveller','Michigan',0.212072892580181,0],
+['Audience_Female','Illinois',0,0.291863511549309],
+['Adults','Florida',0,0.679932786384597],
+['Audience_Male','Ohio',0.863489912357181,0],
+['Parents','Texas',0.98665244365111,0],
+['Audience_Male','New York',0,0.834038311615586],
+['Parents','Michigan',0.0103054491337389,0.0541031779721379],
+['Teenagers','New York',0,0.217314287088811],
+['Adults','Georgia',0.446607237681746,0.25832694885321]
+];
+var color ={Adults:"#3366CC", Teenagers:"#DC3912",  Strategy_Gamers:"#FF9900",
+            Parents:"#109618", Audience_Female:"#990099", Traveller:"#0099C6"};
+var svg = d3.select("body").append("svg").attr("width", 960).attr("height", 800);
+
+svg.append("text").attr("x",250).attr("y",70)
+    .attr("class","header").text("Positive Model");
+    
+svg.append("text").attr("x",750).attr("y",70)
+    .attr("class","header").text("Negative Model");
+
+var g =[svg.append("g").attr("transform","translate(150,100)")
+        ,svg.append("g").attr("transform","translate(650,100)")];
+
+var bp=[ viz.bP()
+        .data(data)
+        .min(12)
+        .pad(1)
+        .height(600)
+        .width(200)
+        .barSize(35)
+        .fill(d=>color[d.primary])      
+    ,viz.bP()
+        .data(data)
+        .value(d=>d[3])
+        .min(12)
+        .pad(1)
+        .height(600)
+        .width(200)
+        .barSize(35)
+        .fill(d=>color[d.primary])
+];
+        
+[0,1].forEach(function(i){
+    g[i].call(bp[i])
+    
+    g[i].append("text").attr("x",-50).attr("y",-8).style("text-anchor","middle").text("User");
+    g[i].append("text").attr("x", 250).attr("y",-8).style("text-anchor","middle").text("Region");
+    
+    g[i].append("line").attr("x1",-120).attr("x2",0);
+    g[i].append("line").attr("x1",200).attr("x2",300);
+    
+    g[i].append("line").attr("y1",610).attr("y2",610).attr("x1",-120).attr("x2",0);
+    g[i].append("line").attr("y1",610).attr("y2",610).attr("x1",200).attr("x2",300);
+    
+    g[i].selectAll(".mainBars")
+        .on("mouseover",mouseover)
+        .on("mouseout",mouseout);
+
+    g[i].selectAll(".mainBars").append("text").attr("class","label")
+        .attr("x",d=>(d.part=="primary"? -30: 30))
+        .attr("y",d=>+6)
+        .text(d=>d.key)
+        .attr("text-anchor",d=>(d.part=="primary"? "end": "start"));
+    
+    g[i].selectAll(".mainBars").append("text").attr("class","perc")
+        .attr("x",d=>(d.part=="primary"? -120: 100))
+        .attr("y",d=>+6)
+        .text(function(d){ return d3.format("0.0%")(d.percent)})
+        .attr("text-anchor",d=>(d.part=="primary"? "end": "start"));
+});
+
+function mouseover(d){
+    [0,1].forEach(function(i){
+        bp[i].mouseover(d);
+        
+        g[i].selectAll(".mainBars").select(".perc")
+        .text(function(d){ return d3.format("0.0%")(d.percent)});
+    });
+}
+function mouseout(d){
+    [0,1].forEach(function(i){
+        bp[i].mouseout(d);
+        
+        g[i].selectAll(".mainBars").select(".perc")
+        .text(function(d){ return d3.format("0.0%")(d.percent)});
+    });
+}
+d3.select(self.frameElement).style("height", "800px");
+</script>
+</body>
+</html>
